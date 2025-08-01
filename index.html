@@ -30,37 +30,25 @@
 </head>
 <body class="bg-[#FFFBEB] text-[#333]">
 
-    <main class="container mx-auto p-4 md:p-8 max-w-6xl">
+    <main class="container mx-auto p-4 md:p-8 max-w-4xl">
 
         <header class="text-center mb-8">
             <h1 class="text-3xl md:text-4xl font-bold text-[#78350F] mb-2">Pronóstico Personalizado para Aspirantes</h1>
             <p class="text-md text-[#B45309]">Bolsa de Música - Andalucía 2025/26</p>
         </header>
 
-        <!-- Bloque de Entradas del Usuario -->
         <div class="bg-white rounded-2xl shadow-md p-6 mb-8">
             <h2 class="text-xl font-bold text-[#78350F] mb-4">Introduce tus datos para la simulación</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <!-- Columna 1: Datos Numéricos -->
-                <div class="space-y-4">
-                    <div>
-                        <label for="bolsaPos" class="block text-sm font-medium text-gray-700">Tu posición en bolsa</label>
-                        <input type="number" id="bolsaPos" value="500" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-amber-500 focus:ring-amber-500 sm:text-sm p-2">
-                    </div>
-                    <div>
-                        <label for="vacantesAgosto" class="block text-sm font-medium text-gray-700">Vacantes informatizadas (Agosto)</label>
-                        <input type="number" id="vacantesAgosto" value="320" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-amber-500 focus:ring-amber-500 sm:text-sm p-2">
-                    </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label for="bolsaPos" class="block text-sm font-medium text-gray-700">Tu posición en bolsa</label>
+                    <input type="number" id="bolsaPos" value="500" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-amber-500 focus:ring-amber-500 sm:text-sm p-2">
                 </div>
-                <!-- Columna 2 y 3: Provincias -->
-                <div class="md:col-span-2">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Provincias seleccionadas</label>
-                    <div id="provinciasContainer" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                        <!-- Checkboxes se insertarán aquí -->
-                    </div>
+                <div>
+                    <label for="vacantesAgosto" class="block text-sm font-medium text-gray-700">Vacantes informatizadas (Agosto)</label>
+                    <input type="number" id="vacantesAgosto" value="320" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-amber-500 focus:ring-amber-500 sm:text-sm p-2">
                 </div>
             </div>
-            <div id="errorBlock" class="hidden text-center mt-4 p-3 rounded-lg bg-red-100 text-red-700"></div>
             <div class="mt-6 text-center">
                 <button id="calculateBtn" class="bg-[#F59E0B] hover:bg-[#D97706] text-white font-bold py-2 px-6 rounded-lg transition-colors">
                     Calcular Pronóstico
@@ -68,11 +56,9 @@
             </div>
         </div>
 
-        <!-- Bloque de Resultados -->
         <div id="resultsBlock" class="hidden">
              <div id="resultText" class="text-center mb-8 p-6 rounded-2xl shadow-lg text-white result-card">
-                <!-- El resultado se inyectará aquí -->
-            </div>
+                </div>
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div class="bg-white rounded-2xl shadow-md p-6">
                     <h3 class="text-lg font-bold text-[#78350F] mb-2 text-center">Avance Acumulado de la Bolsa</h3>
@@ -93,26 +79,27 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // --- DATOS BASE CON PONDERACIÓN DE DEMANDA ---
-            const PROVINCIAS = {
-                'Almería': { pdi: 5.5, checked: false },
-                'Cádiz': { pdi: 7.0, checked: false },
-                'Córdoba': { pdi: 6.0, checked: false },
-                'Granada': { pdi: 7.5, checked: true },
-                'Huelva': { pdi: 4.8, checked: false },
-                'Jaén': { pdi: 5.0, checked: false },
-                'Málaga': { pdi: 8.8, checked: false },
-                'Sevilla': { pdi: 9.0, checked: false }
-            };
-
+            // --- DATOS BASE AJUSTADOS SEGÚN LA NUEVA TABLA ---
             const bolsaData = {
                 meses: ['Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre', 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio'],
-                bajadaBase: [320, 215, 65, 35, 6, 37, 8, 15, 12, 9, 2],
-                baseVacantesAgosto: 320
+                // Se usa el punto medio de los rangos proporcionados para la estimación base.
+                // El valor de Agosto se controla con el input "Vacantes informatizadas".
+                bajadaBase: [
+                    320, // Placeholder para Agosto, se usa el valor del input.
+                    205, // (190+220)/2
+                    63,  // (55+70)/2
+                    35,  // (30+40)/2
+                    6,   // (4+8)/2
+                    35,  // (30+40)/2
+                    8,   // (5+10)/2
+                    15,  // (10+20)/2
+                    11,  // (8+14)/2
+                    9,   // (7+10)/2
+                    2    // (1+3)/2
+                ],
+                baseVacantesAgosto: 320 // Valor de referencia para el ajuste
             };
             
-            const TOTAL_WEIGHTED_DEMAND = Object.values(PROVINCIAS).reduce((sum, p) => sum + p.pdi, 0);
-
             // --- LÓGICA DE GRÁFICOS ---
             let cumulativeChart, monthlyCallsChart;
 
@@ -147,18 +134,18 @@
                 };
             }
 
-            function calcularPronostico(posicionEfectiva, bajadaAjustada, acumuladoAjustado) {
-                 if (posicionEfectiva <= bajadaAjustada[0]) {
+            function calcularPronostico(posicion, bajadaAjustada, acumuladoAjustado) {
+                 if (posicion <= bajadaAjustada[0]) {
                     return { tipo: 'verano', mesIndex: 0 };
                 }
 
                 for (let i = 1; i < acumuladoAjustado.length; i++) {
-                    if (posicionEfectiva <= acumuladoAjustado[i]) {
+                    if (posicion <= acumuladoAjustado[i]) {
                         const acumuladoAnterior = acumuladoAjustado[i - 1];
                         const bajadaMesActual = bajadaAjustada[i];
                         let semana = 1;
                         if (bajadaMesActual > 0) {
-                           semana = Math.ceil(4 * (posicionEfectiva - acumuladoAnterior) / bajadaMesActual);
+                           semana = Math.ceil(4 * (posicion - acumuladoAnterior) / bajadaMesActual);
                            if (semana < 1) semana = 1;
                            if (semana > 4) semana = 4;
                         }
@@ -169,7 +156,7 @@
                 return { tipo: 'siguiente_curso', mesIndex: bolsaData.meses.length };
             }
 
-            function actualizarUI(resultado, posicionEfectiva, bajadaAjustada, acumuladoAjustado) {
+            function actualizarUI(resultado, posicion, bajadaAjustada, acumuladoAjustado) {
                 document.getElementById('resultsBlock').classList.remove('hidden');
                 
                 const resultTextEl = document.getElementById('resultText');
@@ -178,12 +165,12 @@
                         resultTextEl.innerHTML = '<p class="text-4xl font-bold">¡Adjudicación estimada en Verano!</p><p class="text-sm mt-2 opacity-80">Tu posición está dentro de las vacantes iniciales de agosto.</p>';
                         break;
                     case 'siguiente_curso':
-                        resultTextEl.innerHTML = `<p class="text-3xl font-bold">No se estima llamada este curso.</p><p class="text-sm mt-2 opacity-80">Tu posición efectiva estimada (${Math.round(posicionEfectiva)}) supera los llamamientos previstos.</p>`;
+                        resultTextEl.innerHTML = `<p class="text-3xl font-bold">No se estima llamada este curso.</p><p class="text-sm mt-2 opacity-80">Tu posición (${posicion}) supera los ${Math.round(acumuladoAjustado[acumuladoAjustado.length - 1])} llamamientos previstos.</p>`;
                         break;
                     case 'especifico':
                         resultTextEl.innerHTML = `
                             <p class="text-3xl font-bold">${resultado.semana} de ${resultado.mes}</p>
-                            <p class="text-xs mt-3 opacity-80">Cálculo basado en una posición efectiva de ${Math.round(posicionEfectiva)}.</p>
+                            <p class="text-xs mt-3 opacity-80">Cálculo basado en tu posición en bolsa: ${posicion}.</p>
                         `;
                         break;
                 }
@@ -205,8 +192,8 @@
                         tension: 0.2
                     },
                     {
-                        label: 'Tu Posición Efectiva',
-                        data: new Array(chartLabels.length).fill(posicionEfectiva),
+                        label: 'Tu Posición',
+                        data: new Array(chartLabels.length).fill(posicion),
                         borderColor: '#78350F',
                         borderDash: [5, 5],
                         backgroundColor: 'transparent',
@@ -228,51 +215,18 @@
                 monthlyCallsChart.update();
             }
 
-            const provinciasContainer = document.getElementById('provinciasContainer');
-            Object.keys(PROVINCIAS).forEach(nombre => {
-                const div = document.createElement('div');
-                div.className = 'flex items-center';
-                const input = document.createElement('input');
-                input.type = 'checkbox';
-                input.id = `prov-${nombre}`;
-                input.name = nombre;
-                input.checked = PROVINCIAS[nombre].checked;
-                input.className = 'h-4 w-4 rounded border-gray-300 text-amber-600 focus:ring-amber-500';
-                const label = document.createElement('label');
-                label.htmlFor = `prov-${nombre}`;
-                label.textContent = nombre;
-                label.className = 'ml-2 block text-sm text-gray-900';
-                div.appendChild(input);
-                div.appendChild(label);
-                provinciasContainer.appendChild(div);
-            });
-
             document.getElementById('calculateBtn').addEventListener('click', () => {
-                const errorBlock = document.getElementById('errorBlock');
-                errorBlock.classList.add('hidden');
-
                 const posicion = parseInt(document.getElementById('bolsaPos').value);
                 const vacantes = parseInt(document.getElementById('vacantesAgosto').value);
-                
-                const provinciasSeleccionadas = Array.from(document.querySelectorAll('#provinciasContainer input:checked')).map(el => el.name);
 
-                if (provinciasSeleccionadas.length === 0) {
-                    errorBlock.textContent = "Por favor, selecciona al menos una provincia.";
-                    errorBlock.classList.remove('hidden');
-                    return;
-                }
-
-                // Lógica de cálculo fusionada
-                const pesoProvinciasSeleccionadas = provinciasSeleccionadas.reduce((sum, p) => sum + PROVINCIAS[p].pdi, 0);
-                const factorProvincial = pesoProvinciasSeleccionadas / TOTAL_WEIGHTED_DEMAND;
-                const factorDiversificacion = provinciasSeleccionadas.length / Object.keys(PROVINCIAS).length;
-                const pam = 1 + Math.pow((factorProvincial * factorDiversificacion), 0.5) * 2.5;
-
-                const posicionEfectiva = Math.round(posicion / pam);
-
+                // --- Lógica de Cálculo Simplificada ---
+                // El factor de ajuste se basa en las vacantes de agosto introducidas por el usuario.
                 const factorAjusteVacantes = vacantes / bolsaData.baseVacantesAgosto;
+                
                 const bajadaAjustada = bolsaData.bajadaBase.map((b, index) => {
+                    // La primera adjudicación (Agosto) es directamente el valor introducido.
                     if (index === 0) return vacantes;
+                    // El resto de meses se ajustan según el factor.
                     return Math.round(b * factorAjusteVacantes);
                 });
                 
@@ -283,11 +237,12 @@
                     acumuladoAjustado.push(acumulado);
                 }
                 
-                const resultado = calcularPronostico(posicionEfectiva, bajadaAjustada, acumuladoAjustado);
-                actualizarUI(resultado, posicionEfectiva, bajadaAjustada, acumuladoAjustado);
+                // La posición ya no se ajusta con ponderaciones, es el valor directo.
+                const resultado = calcularPronostico(posicion, bajadaAjustada, acumuladoAjustado);
+                actualizarUI(resultado, posicion, bajadaAjustada, acumuladoAjustado);
             });
             
-            // Simulación inicial al cargar
+            // Simulación inicial al cargar la página
             document.getElementById('calculateBtn').click();
         });
     </script>
